@@ -2,7 +2,7 @@ name: Build and Publish Helm container
 
 on:
   push:
-    paths-ignore:
+    branches-ignore:
       - "main"
       - "master"
       - "dev"

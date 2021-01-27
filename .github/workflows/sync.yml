@@ -20,7 +20,7 @@ jobs:
       with:
         repository: helm/helm
         fetch-depth: 0
-        path: 'source_project'
+        path: '../source_project'
 
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v1
