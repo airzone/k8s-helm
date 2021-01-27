@@ -20,7 +20,7 @@ jobs:
       with:
         repository: helm/helm
         fetch-depth: 0
-        path: '../source_project'
+        path: 'sync_project'
 
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v1
@@ -49,7 +49,7 @@ jobs:
       run: |
         pwd
         ls -al
-        for t in `git --git-dir ../source_project/.git tag -l | grep "$v[0-9]*\.[0-9]*\.[0-9]*$"`
+        for t in `git --git-dir ./sync_project/.git tag -l | grep "$v[0-9]*\.[0-9]*\.[0-9]*$"`
         do
           touch HELM_VERSIONS
           if [ -z "`cat HELM_VERSIONS | grep $t`" ]; then
