@@ -10,7 +10,7 @@ jobs:
 
   sync-tags:
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
 
     steps:
     - uses: actions/checkout@v2
@@ -47,6 +47,8 @@ jobs:
     # Runs a set of commands using the runners shell
     - name: sync
       run: |
+        pwd
+        ls -al
         for t in `git --git-dir ../source_project/.git tag -l | grep "$v[0-9]*\.[0-9]*\.[0-9]*$"`
         do
           touch HELM_VERSIONS
