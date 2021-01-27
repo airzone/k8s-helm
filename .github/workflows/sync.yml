@@ -1,0 +1,63 @@
+name: Sync source project branch
+
+on:
+  schedule:
+  # 定时任务，在每天的0点
+    - cron: '0 16 * * *'
+
+jobs:
+
+  sync-tags:
+
+    runs-on: ubuntu-20.04
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+    - uses: actions/checkout@v2
+      with:
+        repository: helm/helm
+        fetch-depth: 0
+        path: 'sync_project'
+
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v1
+      with:
+        platforms: all
+    - name: Set up Docker Buildx
+      id: buildx
+      uses: docker/setup-buildx-action@v1
+    - name: Available platforms
+      run: echo Available platforms [${{ steps.buildx.outputs.platforms }}]
+
+    - name: Prepare
+      id: prepare
+      run: |
+        echo ::set-output name=image_repo::${{ secrets.DOCKER_USERNAME }}/k8s-helm
+        echo ::set-output name=platforms::linux/amd64,linux/arm64
+    - name: Login to DockerHub
+      uses: docker/login-action@v1
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    - name: sync
+      run: |
+        git config --local user.name Robot
+        git config --local user.email Robot@users.noreply.github.com
+        HELM_VERSIONS=HELM_VERSIONS.md
+        for t in `git --git-dir ./sync_project/.git tag -l | grep "^v[0-9]*\.[0-9]*\.[0-9]*$"`
+        do
+          if [ -z "`cat ${HELM_VERSIONS} | grep $t`" ]; then
+            IMAGE_NAME=${{ steps.prepare.outputs.image_repo }}:$t
+            docker buildx build . --platform ${{ steps.prepare.outputs.platforms }} \
+              -t ${IMAGE_NAME} \
+              --build-arg HELM_LATEST_VERSION=$t \
+              --push
+            echo "* $t" >> ${HELM_VERSIONS}
+            git add ${HELM_VERSIONS}
+            git commit -m "buildx image ${IMAGE_NAME}"
+            git push origin
+          fi
+        done
