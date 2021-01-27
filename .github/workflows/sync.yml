@@ -45,7 +45,7 @@ jobs:
 
     - name: sync
       run: |
-        HELM_VERSIONS=HELM_VERSION.md
+        HELM_VERSIONS=HELM_VERSIONS.md
         for t in `git --git-dir ./sync_project/.git tag -l | grep "^v[0-9]*\.[0-9]*\.[0-9]*$"`
         do
           if [ -z "`cat ${HELM_VERSIONS} | grep $t`" ]; then
