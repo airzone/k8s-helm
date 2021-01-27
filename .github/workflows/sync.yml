@@ -1,6 +1,7 @@
 name: Sync source project branch
 
 on:
+  workflow_dispatch:
   schedule:
   # 定时任务，在每天的0点
     - cron: '0 16 * * *'
