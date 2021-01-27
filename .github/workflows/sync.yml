@@ -1,0 +1,32 @@
+name: Build and Publish Helm container
+
+on:
+  schedule:
+  # 定时任务，在每天的0点
+    - cron: '0 16 * * *'
+
+jobs:
+
+  sync-tags:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
+
+    - name: Clone source project
+      run: git clone https://github.com/lachie83/k8s-helm ../source_project
+
+    # Runs a set of commands using the runners shell
+    - name: sync branch
+      run: |
+        for rb in `git --git-dir ../source_project/.git branch -r | grep "$origin/v[0-9]*\.[0-9]*\.[0-9]*$"`
+        do
+          if [ -z "`git branch -r | grep $rb`" ]; then
+            b=${rb#origin/}
+            git branch $b
+            git push origin $b
+          fi
+        done
