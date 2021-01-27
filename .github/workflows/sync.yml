@@ -1,4 +1,4 @@
-name: Build and Publish Helm container
+name: Sync source project branch
 
 on:
   schedule:
