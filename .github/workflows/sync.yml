@@ -49,15 +49,14 @@ jobs:
       run: |
         pwd
         ls -al
-        for t in `git --git-dir ./sync_project/.git tag -l | grep "^v[2-9]*\.[0-9]*\.[0-9]*$"`
+        for t in `git --git-dir ./sync_project/.git tag -l | grep "^v[0-9]*\.[0-9]*\.[0-9]*$"`
         do
-          touch HELM_VERSIONS
-          if [ -z "`cat HELM_VERSIONS | grep $t`" ]; then
+          if [ -z "`cat HELM_VERSIONS.md | grep $t`" ]; then
             docker buildx build . --platform ${{ steps.prepare.outputs.platforms }} \
               -t ${{ steps.prepare.outputs.image_repo }}:${{ steps.prepare.outputs.image_tag }} \
               --build-arg HELM_LATEST_VERSION=$t \
               --push
-            echo $t >> HELM_VERSIONS
+            echo "* $t" >> HELM_VERSIONS.md
             git add HELM_VERSIONS
             git commit -m "buildx image airzone/k8s-helm:$t"
             git push origin
