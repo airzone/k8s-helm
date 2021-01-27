@@ -16,19 +16,49 @@ jobs:
     - uses: actions/checkout@v2
       with:
         fetch-depth: 0
+    - uses: actions/checkout@v2
+      with:
+        repository: helm/helm
+        fetch-depth: 0
+        path: 'source_project'
 
-    - name: Clone source project
-      run: git clone https://github.com/lachie83/k8s-helm ../source_project
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v1
+      with:
+        platforms: all
+    - name: Set up Docker Buildx
+      id: buildx
+      uses: docker/setup-buildx-action@v1
+    - name: Available platforms
+      run: echo Available platforms [${{ steps.buildx.outputs.platforms }}]
+
+    - name: Prepare
+      id: prepare
+      run: |
+        echo ::set-output name=image_repo::${{ secrets.DOCKER_USERNAME }}/k8s-helm
+        echo ::set-output name=image_tag::${GITHUB_REF#refs/heads/}
+        echo ::set-output name=platforms::linux/amd64,linux/arm64
+    - name: Login to DockerHub
+      uses: docker/login-action@v1
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
 
     # Runs a set of commands using the runners shell
-    - name: sync branch
+    - name: sync
       run: |
-        for rb in `git --git-dir ../source_project/.git branch -r | grep "$origin/v[0-9]*\.[0-9]*\.[0-9]*$"`
+        for t in `git --git-dir ../source_project/.git tag -l | grep "$v[0-9]*\.[0-9]*\.[0-9]*$"`
         do
-          if [ -z "`git branch -r | grep $rb`" ]; then
-            b=${rb#origin/}
-            git branch $b
-            git push origin $b
+          touch HELM_VERSIONS
+          if [ -z "`cat HELM_VERSIONS | grep $t`" ]; then
+            docker buildx build . --platform ${{ steps.prepare.outputs.platforms }} \
+              -t ${{ steps.prepare.outputs.image_repo }}:${{ steps.prepare.outputs.image_tag }} \
+              --build-arg HELM_LATEST_VERSION=$t \
+              --push
+            echo $t >> HELM_VERSIONS
+            git add HELM_VERSIONS
+            git commit -m "buildx image airzone/k8s-helm:$t"
+            git push origin
             exit
           fi
         done
