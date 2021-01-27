@@ -6,8 +6,7 @@ ENV TARGETARCH=${TARGETARCH:-amd64}
 
 ARG HELM_LATEST_VERSION="v3.5.0"
 
-RUN ${TARGETPLATFORM/\/-} \
- && apk add --update ca-certificates \
+RUN apk add --update ca-certificates \
  && apk add --update -t deps wget git openssl bash \
  && wget -q https://get.helm.sh/helm-${HELM_LATEST_VERSION}-${TARGETOS}-${TARGETARCH}.tar.gz \
  && tar -xf helm-${HELM_LATEST_VERSION}-${TARGETOS}-${TARGETARCH}.tar.gz \
