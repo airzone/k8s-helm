@@ -40,3 +40,4 @@ Released version
 * v2.10.0
 * v2.11.0
 * v2.12.0
+* v2.12.1
