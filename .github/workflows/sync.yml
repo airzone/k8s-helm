@@ -46,7 +46,7 @@ jobs:
     - name: sync
       run: |
         apt-get -y update && apt-get -y install skopeo
-        skopeo login quay.io -u ${{ QUAY_USERNAME }} -p ${{ QUAY_PASSWORD }}
+        skopeo login quay.io -u ${{ secrets.QUAY_USERNAME }} -p ${{ secrets.QUAY_PASSWORD }}
         kopeo sync --src docker --dest docker k8s.gcr.io/addon-resizer quay.io/airzone/addon-resizer
         skopeo logout quay.io
         git config --local user.name Robot
